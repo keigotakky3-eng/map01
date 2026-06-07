@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Night Drive Map</title>
+
+	<link href="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.css" rel="stylesheet">
+
+	<style>
+
+		*{
+			margin:0;
+			padding:0;
+			box-sizing:border-box;
+		}
+
+		body{
+			font-family: sans-serif;
+			background: black;
+			overflow: hidden;
+		}
+
+		#map{
+			width:100vw;
+			height:100vh;
+		}
+
+		.title{
+			position:absolute;
+			top:20px;
+			left:20px;
+			z-index:10;
+
+			background:rgba(0,0,0,0.7);
+			color:white;
+
+			padding:15px 20px;
+			border-radius:15px;
+
+			backdrop-filter: blur(10px);
+
+			box-shadow:0 0 20px rgba(0,0,0,0.5);
+		}
+
+		.title h1{
+			font-size:24px;
+			margin-bottom:5px;
+		}
+
+		.title p{
+			font-size:14px;
+			color:#ccc;
+		}
+
+		.maplibregl-popup-content{
+			background:#111;
+			color:white;
+			border-radius:12px;
+			padding:15px;
+			box-shadow:0 0 20px rgba(0,0,0,0.5);
+		}
+
+		.maplibregl-popup-content h2{
+			margin-bottom:8px;
+			color:#4da6ff;
+		}
+
+		.maplibregl-popup-tip{
+			border-top-color:#111 !important;
+		}
+
+		.custom-marker{
+			width:18px;
+			height:18px;
+			background:#00bfff;
+			border:3px solid white;
+			border-radius:50%;
+
+			box-shadow:
+				0 0 10px #00bfff,
+				0 0 20px #00bfff;
+
+			cursor:pointer;
+		}
+
+		.music-box{
+			position:absolute;
+			bottom:20px;
+			left:20px;
+			z-index:10;
+
+			background:rgba(0,0,0,0.7);
+			color:white;
+
+			padding:12px 18px;
+			border-radius:12px;
+
+			backdrop-filter: blur(10px);
+		}
+
+		.route-button{
+			position:absolute;
+			top:20px;
+			right:20px;
+			z-index:10;
+
+			border:none;
+			padding:14px 20px;
+
+			border-radius:12px;
+
+			background:#00bfff;
+			color:white;
+
+			font-size:15px;
+			font-weight:bold;
+
+			cursor:pointer;
+
+			box-shadow:0 0 15px rgba(0,191,255,0.5);
+
+			transition:0.3s;
+		}
+
+		.route-button:hover{
+			transform:scale(1.05);
+			background:#0099dd;
+		}
+
+	</style>
+</head>
+
+<body>
+
+	<div class="title">
+		<h1>🌃 Night Drive Map</h1>
+		<p>首都高と夜景スポット巡り</p>
+	</div>
+
+	<div class="music-box">
+		🎵 Eurobeat Playing...
+	</div>
+
+	<button class="route-button" onclick="flyTokyo()">
+		東京へ移動
+	</button>
+
+	<div id="map"></div>
+
+	<script src="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.js"></script>
+
+	<script>
+
+		const map = new maplibregl.Map({
+			container: 'map',
+
+			style: 'https://demotiles.maplibre.org/style.json',
+
+			center: [139.9, 35.6],
+
+			zoom: 8,
+
+			pitch: 60,
+			bearing: -20,
+
+			attributionControl: false
+		});
+
+		map.addControl(
+			new maplibregl.NavigationControl(),
+			'top-left'
+		);
+
+		const locations = [
+
+			{
+				lng: 139.7671,
+				lat: 35.6812,
+				name: "東京駅",
+				text: "夜ドライブのスタート地点"
+			},
+
+			{
+				lng: 139.8395,
+				lat: 35.7101,
+				name: "スカイツリー",
+				text: "夜景がめちゃ綺麗"
+			},
+
+			{
+				lng: 140.1233,
+				lat: 35.6074,
+				name: "千葉フォルニア",
+				text: "車好きが集まる有名スポット"
+			},
+
+			{
+				lng: 139.7606,
+				lat: 35.6264,
+				name: "大黒PA",
+				text: "夜の車好きの聖地"
+			}
+
+		];
+
+		locations.forEach(loc => {
+
+			const el = document.createElement('div');
+			el.className = 'custom-marker';
+
+			new maplibregl.Marker(el)
+
+				.setLngLat([loc.lng, loc.lat])
+
+				.setPopup(
+					new maplibregl.Popup({
+						offset: 25
+					})
+
+					.setHTML(`
+						<h2>${loc.name}</h2>
+						<p>${loc.text}</p>
+					`)
+				)
+
+				.addTo(map);
+
+		});
+
+		map.on('load', () => {
+
+			map.addSource('route', {
+				type: 'geojson',
+
+				data: {
+					type: 'Feature',
+
+					geometry: {
+						type: 'LineString',
+
+						coordinates: [
+
+							[139.7671, 35.6812],
+							[139.8395, 35.7101],
+							[140.1233, 35.6074]
+
+						]
+					}
+				}
+			});
+
+			map.addLayer({
+				id: 'route',
+
+				type: 'line',
+
+				source: 'route',
+
+				layout: {
+					'line-join': 'round',
+					'line-cap': 'round'
+				},
+
+				paint: {
+					'line-color': '#00bfff',
+					'line-width': 5,
+					'line-opacity': 0.8
+				}
+			});
+
+		});
+
+		function flyTokyo(){
+
+			map.flyTo({
+
+				center:[139.7671,35.6812],
+
+				zoom:13,
+
+				speed:0.8,
+
+				curve:1.5,
+
+				pitch:70,
+
+				bearing:40
+
+			});
+
+		}
+
+	</script>
+
+</body>
+
+</html>
