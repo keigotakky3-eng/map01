@@ -186,29 +186,9 @@
 	<script src="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.js"></script>
 
 	<script>
-		// 暗色ハイブリッド衛星写真スタイル
+		// オープンデータ（地理院地図ベース）のスタイリッシュな写真レイヤーに変更
 		const map = new maplibregl.Map({
 			container: 'map',
 			style: {
 				version: 8,
 				sources: {
-					'satellite': {
-						type: 'raster',
-						tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
-						tileSize: 256,
-						attribution: 'Google Imagery'
-					}
-				},
-				layers: [
-					{ id: 'satellite-layer', type: 'raster', source: 'satellite' },
-					{
-						id: 'darken-layer',
-						type: 'background',
-						paint: { 'background-color': '#020205', 'background-opacity': 0.25 }
-					}
-				]
-			},
-			center: [139.9, 35.65],
-			zoom: 9.5,
-			pitch: 45,
-			bearing: -20		
