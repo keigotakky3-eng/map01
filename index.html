@@ -164,12 +164,14 @@
 
 <body>
 
+	<!-- 左上：メインパネル -->
 	<div class="hud-panel title-hud">
 		<h1>SATELLITE CRUISE</h1>
 		<p>SYSTEM: ACTIVE // ORBITAL VIEW</p>
 		<p style="margin-top: 5px;">📍 TOKYO BAY AREA HIGHWAY LOOP</p>
 	</div>
 
+	<!-- 右上：テレメトリーパネル -->
 	<div class="hud-panel status-hud">
 		<div class="status-item"><span class="status-label">MODE:</span><span class="status-value" id="mode-text">STANDBY</span></div>
 		<div class="status-item"><span class="status-label">ALTITUDE:</span><span class="status-value" id="alt-text">4,200 km</span></div>
@@ -211,4 +213,130 @@
 			center: [139.9, 35.65],
 			zoom: 9.5,
 			pitch: 45,
-			bearing: -20		
+			bearing: -20,
+			attributionControl: false
+		});
+
+		const locations = [
+			{ lng: 139.7671, lat: 35.6812, name: "CORE-01: TOKYO", text: "東京駅上空エリア" },
+			{ lng: 139.8395, lat: 35.7101, name: "NODE-02: SKYTREE", text: "墨田タワーセクター" },
+			{ lng: 140.1233, lat: 35.6074, name: "POINT-03: CHIBALFORNIA", text: "湾岸アウトライン終端" },
+			{ lng: 139.7606, lat: 35.6264, name: "BASE-04: DAIKOKU", text: "横浜ベイ・ジャンクション" }
+		];
+
+		// レーダー風マーカー設置
+		locations.forEach(loc => {
+			const el = document.createElement('div');
+			el.className = 'radar-dot';
+
+			new maplibregl.Marker(el)
+				.setLngLat([loc.lng, loc.lat])
+				.setPopup(
+					new maplibregl.Popup({ offset: 15, closeButton: false })
+					.setHTML(`<h2>${loc.name}</h2><p>${loc.text}</p>`)
+				)
+				.addTo(map);
+		});
+
+		map.on('load', () => {
+			// 夜光ワイヤールートの定義
+			map.addSource('cyber-route', {
+				type: 'geojson',
+				data: {
+					type: 'Feature',
+					geometry: {
+						type: 'LineString',
+						coordinates: [
+							[139.7671, 35.6812],
+							[139.8395, 35.7101],
+							[140.1233, 35.6074],
+							[139.7606, 35.6264],
+							[139.7671, 35.6812]
+						]
+					}
+				}
+			});
+
+			// ネオンレーザーライン
+			map.addLayer({
+				id: 'laser-line',
+				type: 'line',
+				source: 'cyber-route',
+				paint: {
+					'line-color': '#00ffcc',
+					'line-width': 3,
+					'line-opacity': 0.8
+				}
+			});
+
+			// HUDの数値を書き換えるリアルタイム演出
+			map.on('move', () => {
+				const zoom = map.getZoom();
+				const bearing = map.getBearing();
+				const fakeAltitude = Math.round((20 - zoom) * 120);
+				
+				document.getElementById('alt-text').innerText = `${fakeAltitude} km`;
+				document.getElementById('bear-text').innerText = `${bearing.toFixed(1)}°`;
+			});
+		});
+
+		// オートパイロット制御
+		let isAutoPilot = false;
+		let animationFrameId = null;
+
+		function toggleAutoPilot() {
+			const btn = document.querySelector('.nav-btn');
+			const modeText = document.getElementById('mode-text');
+
+			if (!isAutoPilot) {
+				isAutoPilot = true;
+				btn.innerText = "DISENGAGE SYSTEM";
+				btn.style.background = "#ff0055";
+				btn.style.color = "#fff";
+				modeText.innerText = "CRUISING";
+				modeText.style.color = "#ff0055";
+
+				map.flyTo({
+					center: [139.7671, 35.6812],
+					zoom: 13.5,
+					pitch: 65,
+					bearing: 0,
+					speed: 0.7,
+					curve: 1.5,
+					essential: true
+				});
+
+				map.once('moveend', startOrbitalRotation);
+
+			} else {
+				isAutoPilot = false;
+				btn.innerText = "ENGAGE AUTOPILOT";
+				btn.style.background = "#00ffcc";
+				btn.style.color = "#020205";
+				modeText.innerText = "STANDBY";
+				modeText.style.color = "#ffffff";
+
+				if (animationFrameId) {
+					cancelAnimationFrame(animationFrameId);
+				}
+
+				map.flyTo({
+					center: [139.9, 35.65],
+					zoom: 9.5,
+					pitch: 45,
+					bearing: -20,
+					speed: 0.8
+				});
+			}
+		}
+
+		function startOrbitalRotation() {
+			if (!isAutoPilot) return;
+			const currentBearing = map.getBearing();
+			map.setBearing(currentBearing + 0.08);
+			animationFrameId = requestAnimationFrame(startOrbitalRotation);
+		}
+	</script>
+
+</body>
+</html>
