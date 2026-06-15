@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<title>Cyber Night Drive Map</title>
+	<title>Satellite Night Cruise</title>
 
 	<link href="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.css" rel="stylesheet">
 
@@ -17,89 +17,94 @@
 		}
 
 		body{
-			font-family: 'Helvetica Neue', Arial, sans-serif;
-			background: #05050a;
+			font-family: 'Consolas', 'Courier New', monospace, sans-serif;
+			background: #020205;
 			overflow: hidden;
-			color: #fff;
+			color: #00ffcc;
 		}
 
 		#map{
 			width:100vw;
 			height:100vh;
-			filter: saturate(1.2) contrast(1.1); /* 地図の発色を少しサイバーに */
 		}
 
-		/* 共通のネオンガラスモルフィズムスタイル */
-		.glass-panel {
-			background: rgba(10, 10, 20, 0.75);
-			border: 1px solid rgba(0, 191, 255, 0.2);
-			border-radius: 16px;
-			backdrop-filter: blur(12px);
-			-webkit-backdrop-filter: blur(12px);
-			box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7), 
-			            0 0 15px rgba(0, 191, 255, 0.1);
-			color: white;
+		/* SFコックピット風 UIパネル */
+		.hud-panel {
+			position: absolute;
+			background: rgba(5, 10, 20, 0.85);
+			border: 1px solid #00ffcc;
+			padding: 15px 20px;
+			border-radius: 4px;
+			backdrop-filter: blur(8px);
+			box-shadow: 0 0 20px rgba(0, 255, 204, 0.15);
 			z-index: 10;
 		}
 
-		.title{
-			position:absolute;
-			top:20px;
-			left:20px;
-			padding:18px 25px;
+		.title-hud {
+			top: 20px;
+			left: 20px;
+			width: 320px;
 		}
 
-		.title h1{
-			font-size:26px;
-			font-weight: 800;
-			letter-spacing: 1px;
-			text-shadow: 0 0 10px rgba(0, 191, 255, 0.6),
-			             0 0 20px rgba(0, 191, 255, 0.3);
-			margin-bottom:5px;
-		}
-
-		.title p{
-			font-size:13px;
-			color:#8a99ad;
-			letter-spacing: 0.5px;
-		}
-
-		/* ポップアップのカスタマイズ */
-		.maplibregl-popup-content{
-			background: rgba(10, 10, 20, 0.9) !important;
-			border: 2px solid #ff007f !important;
-			color: white !important;
-			border-radius: 16px !important;
-			padding: 18px !important;
-			box-shadow: 0 0 25px rgba(255, 0, 127, 0.4) !important;
-			backdrop-filter: blur(8px);
-		}
-
-		.maplibregl-popup-content h2{
-			margin-bottom:8px;
-			color:#ff007f;
+		.title-hud h1 {
 			font-size: 20px;
-			text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+			font-weight: bold;
+			letter-spacing: 2px;
+			color: #ffffff;
+			border-bottom: 1px solid rgba(0, 255, 204, 0.4);
+			padding-bottom: 5px;
+			margin-bottom: 8px;
 		}
 
-		.maplibregl-popup-content p {
-			color: #ddd;
-			font-size: 14px;
-			line-height: 1.4;
+		.title-hud p {
+			font-size: 11px;
+			color: #00ffcc;
+			opacity: 0.8;
 		}
 
-		.maplibregl-popup-tip{
-			border-top-color: #ff007f !important;
+		/* 右側のステータスモニター */
+		.status-hud {
+			top: 20px;
+			right: 20px;
+			width: 240px;
+			font-size: 12px;
+			line-height: 1.6;
 		}
 
-		/* ネオンマーカー */
-		.custom-marker{
-			width:22px;
-			height:22px;
-			background:#00bfff;
-			border:3px solid #fff;
-			border-radius:50%;
-			box-shadow:
-				0 0 10px #00b
+		.status-item {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 4px;
+		}
 
+		.status-label { color: #88aacc; }
+		.status-value { color: #ffffff; font-weight: bold; text-shadow: 0 0 5px #00ffcc;}
+
+		/* 衛星管制風のコントロールボタン */
+		.nav-btn {
+			position: absolute;
+			bottom: 30px;
+			right: 30px;
+			z-index: 10;
+			background: #00ffcc;
+			color: #020205;
+			border: none;
+			padding: 12px 24px;
+			font-size: 13px;
+			font-weight: bold;
+			letter-spacing: 2px;
+			cursor: pointer;
+			border-radius: 4px;
+			box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+			transition: all 0.3s ease;
+		}
+
+		.nav-btn:hover {
+			background: #ffffff;
+			box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+			transform: scale(1.05);
+		}
+
+		/* マップポップアップの近未来化 */
+		.maplib
 		
