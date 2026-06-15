@@ -106,5 +106,109 @@
 		}
 
 		/* マップポップアップの近未来化 */
-		.maplib
-		
+		.maplibregl-popup-content {
+			background: rgba(2, 2, 5, 0.9) !important;
+			border: 1px solid #00ffcc !important;
+			color: #ffffff !important;
+			border-radius: 4px !important;
+			padding: 12px !important;
+			font-family: monospace;
+		}
+
+		.maplibregl-popup-content h2 {
+			color: #00ffcc;
+			font-size: 15px;
+			letter-spacing: 1px;
+			margin-bottom: 6px;
+			border-bottom: 1px solid rgba(0,255,204,0.2);
+		}
+
+		.maplibregl-popup-content p {
+			font-size: 11px;
+			color: #aabbcc;
+		}
+
+		.maplibregl-popup-tip {
+			border-top-color: #00ffcc !important;
+		}
+
+		/* レーダーの点のようなマーカー */
+		.radar-dot {
+			width: 14px;
+			height: 14px;
+			background: #ffffff;
+			border-radius: 50%;
+			position: relative;
+			cursor: pointer;
+		}
+
+		.radar-dot::after {
+			content: '';
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			background: #00ffcc;
+			border-radius: 50%;
+			animation: pulse 2s infinite;
+		}
+
+		@keyframes pulse {
+			0% { transform: scale(1); opacity: 1; }
+			100% { transform: scale(3.5); opacity: 0; }
+		}
+
+	</style>
+</head>
+
+<body>
+
+	<div class="hud-panel title-hud">
+		<h1>SATELLITE CRUISE</h1>
+		<p>SYSTEM: ACTIVE // ORBITAL VIEW</p>
+		<p style="margin-top: 5px;">📍 TOKYO BAY AREA HIGHWAY LOOP</p>
+	</div>
+
+	<div class="hud-panel status-hud">
+		<div class="status-item"><span class="status-label">MODE:</span><span class="status-value" id="mode-text">STANDBY</span></div>
+		<div class="status-item"><span class="status-label">ALTITUDE:</span><span class="status-value" id="alt-text">4,200 km</span></div>
+		<div class="status-item"><span class="status-label">BEARING:</span><span class="status-value" id="bear-text">-20.0°</span></div>
+		<div class="status-item"><span class="status-label">AUDIO:</span><span class="status-value" style="color:#ff0055;">EUROBEAT.LOG</span></div>
+	</div>
+
+	<button class="nav-btn" onclick="toggleAutoPilot()">
+		ENGAGE AUTOPILOT
+	</button>
+
+	<div id="map"></div>
+
+	<script src="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.js"></script>
+
+	<script>
+		// 暗色ハイブリッド衛星写真スタイル
+		const map = new maplibregl.Map({
+			container: 'map',
+			style: {
+				version: 8,
+				sources: {
+					'satellite': {
+						type: 'raster',
+						tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
+						tileSize: 256,
+						attribution: 'Google Imagery'
+					}
+				},
+				layers: [
+					{ id: 'satellite-layer', type: 'raster', source: 'satellite' },
+					{
+						id: 'darken-layer',
+						type: 'background',
+						paint: { 'background-color': '#020205', 'background-opacity': 0.25 }
+					}
+				]
+			},
+			center: [139.9, 35.65],
+			zoom: 9.5,
+			pitch: 45,
+			bearing: -20		
