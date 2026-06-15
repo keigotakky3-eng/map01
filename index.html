@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<title>Lightweight Satellite Cruise</title>
+	<title>TACTICAL MAP - MIDTERM DEMO</title>
 
 	<link href="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.css" rel="stylesheet">
 
@@ -17,226 +17,362 @@
 		}
 
 		body{
-			font-family: monospace;
-			background: #05050a;
+			font-family: 'Consolas', 'Courier New', Meiryo, monospace;
+			background: #020208;
 			overflow: hidden;
 			color: #00ffcc;
+		}
+
+		/* SFモニター風のスキャンライン効果 */
+		body::after {
+			content: " ";
+			display: block;
+			position: absolute;
+			top: 0; left: 0; bottom: 0; right: 0;
+			background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+			z-index: 99999;
+			background-size: 100% 4px, 6px 100%;
+			pointer-events: none;
 		}
 
 		#map{
 			width:100vw;
 			height:100vh;
+			filter: saturate(1.2) hue-rotate(5deg);
 		}
 
-		/* 軽くてシンプルなSF風パネル */
-		.hud-panel {
+		/* 共通：近未来UIフレーム */
+		.cyber-panel {
 			position: absolute;
-			background: rgba(10, 10, 20, 0.85);
+			background: rgba(4, 8, 20, 0.85);
 			border: 1px solid #00ffcc;
-			padding: 12px 18px;
-			border-radius: 4px;
+			box-shadow: 0 0 15px rgba(0, 255, 204, 0.15), inset 0 0 10px rgba(0, 255, 204, 0.1);
+			backdrop-filter: blur(6px);
 			z-index: 10;
+			clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
 		}
 
+		/* 左上：メイン解説ボード */
 		.title-hud {
 			top: 20px;
 			left: 20px;
+			width: 320px;
+			padding: 20px;
 		}
 
 		.title-hud h1 {
 			font-size: 18px;
+			font-weight: 900;
+			letter-spacing: 2px;
 			color: #ffffff;
-			margin-bottom: 2px;
+			text-shadow: 0 0 8px #00ffcc;
+			border-bottom: 2px solid #00ffcc;
+			padding-bottom: 5px;
+			margin-bottom: 8px;
 		}
 
 		.title-hud p {
 			font-size: 11px;
+			color: #88aacc;
+			line-height: 1.6;
+		}
+
+		/* 左下：動くテレメトリーボード */
+		.telemetry-hud {
+			bottom: 20px;
+			left: 20px;
+			width: 320px;
+			padding: 12px 20px;
+			font-size: 11px;
+		}
+
+		/* 右上：実演用操作ランチャー（スクロール対応） */
+		.nav-panel {
+			top: 20px;
+			right: 20px;
+			width: 250px;
+			padding: 15px 10px;
+			display: flex;
+			flex-direction: column;
+			max-height: 85vh;
+		}
+
+		.nav-panel h3 {
+			font-size: 11px;
+			letter-spacing: 2px;
 			color: #00ffcc;
+			margin-bottom: 12px;
+			text-shadow: 0 0 5px #00ffcc;
+			text-align: center;
+			flex-shrink: 0;
 		}
 
-		/* オートパイロットボタン */
-		.nav-btn {
-			position: absolute;
-			bottom: 25px;
-			right: 25px;
-			z-index: 10;
+		/* ボタンが並ぶコンテナをスクロール可能に */
+		#btn-container {
+			overflow-y: auto;
+			flex-grow: 1;
+			padding-right: 5px;
+		}
+
+		/* スクロールバーのサイバー化 */
+		#btn-container::-webkit-scrollbar {
+			width: 4px;
+		}
+		#btn-container::-webkit-scrollbar-thumb {
 			background: #00ffcc;
-			color: #05050a;
-			border: none;
-			padding: 10px 20px;
-			font-size: 12px;
-			font-weight: bold;
+			border-radius: 2px;
+		}
+
+		/* サイバーデザインのスポットボタン */
+		.spot-btn {
+			width: 100%;
+			background: rgba(0, 255, 204, 0.05);
+			border: 1px solid rgba(0, 255, 204, 0.2);
+			color: #ffffff;
+			padding: 8px 10px;
+			margin-bottom: 5px;
+			text-align: left;
+			font-size: 11px;
+			font-family: monospace;
 			cursor: pointer;
-			border-radius: 4px;
-			box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+			transition: all 0.15s ease;
+			clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+		}
+
+		.spot-btn:hover {
+			background: rgba(0, 255, 204, 0.25);
+			border-color: #00ffcc;
+			box-shadow: 0 0 8px rgba(0, 255, 204, 0.3);
+			transform: translateX(-2px);
+		}
+
+		/* 特務機関風の自動周回ボタン */
+		.auto-btn {
+			width: 100%;
+			background: #00ffcc;
+			color: #020208;
+			font-weight: bold;
+			border: none;
+			padding: 10px;
+			margin-top: 10px;
+			cursor: pointer;
+			font-size: 11px;
+			letter-spacing: 1px;
 			transition: 0.2s;
+			flex-shrink: 0;
+			clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
 		}
 
-		.nav-btn:hover {
+		.auto-btn:hover {
 			background: #ffffff;
-			transform: scale(1.03);
+			box-shadow: 0 0 15px #ffffff;
 		}
 
-		/* ポップアップ */
+		/* ポップアップのSF化 */
 		.maplibregl-popup-content {
-			background: #0a0a10 !important;
-			border: 1px solid #00ffcc !important;
+			background: rgba(4, 8, 20, 0.95) !important;
+			border: 1px solid #ff0055 !important;
 			color: #ffffff !important;
-			border-radius: 4px !important;
-			padding: 10px !important;
+			border-radius: 0px !important;
+			padding: 12px !important;
+			box-shadow: 0 0 15px rgba(255, 0, 85, 0.4) !important;
+			width: 200px;
 		}
 
 		.maplibregl-popup-content h2 {
-			color: #00ffcc;
-			font-size: 14px;
+			color: #ff0055;
+			font-size: 13px;
+			letter-spacing: 1px;
 			margin-bottom: 4px;
+			text-shadow: 0 0 5px rgba(255, 0, 85, 0.5);
 		}
 
 		.maplibregl-popup-content p {
 			font-size: 11px;
-			color: #cccccc;
+			color: #ccd6e0;
+			line-height: 1.4;
 		}
 
-		/* 軽量なレーダーピン */
-		.radar-dot {
+		.maplibregl-popup-tip {
+			border-top-color: #ff0055 !important;
+		}
+
+		/* スタイリッシュなターゲットピン */
+		.custom-dot {
 			width: 12px;
 			height: 12px;
 			background: #00ffcc;
-			border: 2px solid #fff;
+			border: 2px solid #020208;
 			border-radius: 50%;
 			cursor: pointer;
-			box-shadow: 0 0 8px #00ffcc;
+			box-shadow: 0 0 0 4px rgba(0, 255, 204, 0.2), 0 0 10px #00ffcc;
+			transition: 0.3s;
+		}
+
+		.custom-dot:hover {
+			background: #ff0055;
+			box-shadow: 0 0 0 6px rgba(255, 0, 85, 0.3), 0 0 15px #ff0055;
+			transform: scale(1.2);
 		}
 	</style>
 </head>
 
 <body>
 
-	<div class="hud-panel title-hud">
-		<h1>SATELLITE CRUISE v2</h1>
-		<p>📍 TOKYO BAY FULL LOOP (8 NODES)</p>
+	<div class="cyber-panel title-hud">
+		<h1>DRIVE SPOTS ARCHIVE</h1>
+		<p>MapLibre GL API 駆動。東京湾岸域における景観・利便性に優れた「ドライブ適地」の抽出、およびインタラクティブ・ロケーションデータベース。</p>
 	</div>
 
-	<button class="nav-btn" onclick="toggleAutoPilot()">
-		ENGAGE AUTOPILOT
-	</button>
+	<div class="cyber-panel telemetry-hud">
+		<div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+			<span>SYS_STATUS: <span style="color:#00ffcc; font-weight:bold;">ONLINE</span></span>
+			<span id="live-time">00:00:00</span>
+		</div>
+		<div style="color: #88aacc; font-size: 10px;">
+			LAT: <span id="tele-lat" style="color:#fff">35.580</span> | 
+			LNG: <span id="tele-lng" style="color:#fff">139.820</span> | 
+			BRG: <span id="tele-brg" style="color:#fff">-10.0°</span>
+		</div>
+	</div>
+
+	<div class="cyber-panel nav-panel">
+		<h3>[ BAY AREA SPOTS ]</h3>
+		<div id="btn-container"></div>
+		<button class="auto-btn" onclick="toggleAutoPilot()">GLOBAL SCAN (自動旋回)</button>
+	</div>
 
 	<div id="map"></div>
 
 	<script src="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.js"></script>
 
 	<script>
-		// 画像を使わない、超軽量で動作が滑らかな「デモ用ダークスタイル」
+		// 超軽量・安定のスタイリッシュダークマップ
 		const map = new maplibregl.Map({
 			container: 'map',
 			style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-			center: [139.85, 35.55],
-			zoom: 10,
+			center: [139.82, 35.55],
+			zoom: 9.8,
 			pitch: 50,
 			bearing: -10,
 			attributionControl: false
 		});
 
-		// 充実の8箇所スポットデータ
+		// ドライブに向いている湾岸12大スポットデータ
 		const locations = [
-			{ lng: 139.7671, lat: 35.6812, name: "01: 東京駅", text: "ナイトドライブの始発点" },
-			{ lng: 139.8395, lat: 35.7101, name: "02: スカイツリー", text: "サイバーに輝く巨大タワー" },
-			{ lng: 139.7633, lat: 35.6366, name: "03: レインボーブリッジ", text: "駆け抜ける都市の夜景" },
-			{ lng: 139.7820, lat: 35.5480, name: "04: 羽田空港周辺", text: "滑走路のライトが幻想的" },
-			{ lng: 139.7400, lat: 35.5200, name: "05: 川崎工場地帯", text: "近未来SF感満載の工場夜景" },
-			{ lng: 139.7606, lat: 35.6264, name: "06: 大黒PA", text: "車好きが集まる聖地ジャンクション" },
-			{ lng: 139.8747, lat: 35.4632, name: "07: 海ほたるPA", text: "東京湾の真ん中に浮かぶ要塞" },
-			{ lng: 140.1233, lat: 35.6074, name: "08: 千葉フォルニア", text: "対岸のビル群を望む海岸通" }
+			{ id: 1, lng: 139.7633, lat: 35.6366, name: "レインボーブリッジ", text: "【大定番】ライトアップされた都心の夜景を車窓から一望できる、最高峰のドライブ道路。" },
+			{ id: 2, lng: 139.7606, lat: 35.6264, name: "大黒PA", text: "【聖地】多くのカスタムカーが集まる首都高の拠点。近未来的な巨大ループ橋の真下に位置する。" },
+			{ id: 3, lng: 139.8747, lat: 35.4632, name: "海ほたるPA", text: "【海上要塞】360度を海に囲まれた孤立パーキング。夜間のアクアライン走行は開放感抜群。" },
+			{ id: 4, lng: 139.7400, lat: 35.5200, name: "川崎工場地帯", text: "【SF夜景】千鳥町や浮島周辺。複雑に絡み合うプラントの強烈な光を楽しめる深夜ドライブの聖地。" },
+			{ id: 5, lng: 139.7820, lat: 35.5480, name: "羽田空港国際線周辺", text: "【夜間飛行】深夜でも明るい滑走路や、離発着する飛行機を間近に眺めながら走れる外周ルート。" },
+			{ id: 6, lng: 140.1233, lat: 35.6074, name: "千葉フォルニア", text: "【異国情緒】袖ケ浦海浜公園に向かう直線道路。ヤシの木が並び、対岸の東京のビル群を遠望できる。" },
+			{ id: 7, lng: 139.6432, lat: 35.4415, name: "横浜みなとみらい", text: "【夜景ドライブ】コスモワールドの観覧車やランドマークタワーなど、洗練された都市夜景巡り。" },
+			{ id: 8, lng: 139.8091, lat: 35.6277, name: "若洲海浜公園", text: "【巨大構造物】東京ゲートブリッジを真下から見上げるスポット。静かで落ち着いた夜間駐車場あり。" },
+			{ id: 9, lng: 139.6508, lat: 35.4143, name: "本牧埠頭周辺", text: "【ガントリークレーン】キリンのような巨大クレーンが並ぶ港湾地帯。無機質でインダストリアルな雰囲気。" },
+			{ id: 10, lng: 139.9248, lat: 35.6385, name: "浦安総合公園周辺", text: "【シーサイド】パームツリーが並ぶ広いリゾート風道路。静かな海風を感じながら走るのに最適。" },
+			{ id: 11, lng: 139.7752, lat: 35.6482, name: "豊洲ぐるり公園周辺", text: "【近未来都市】高層タワーマンション群と、晴海フラッグ方面の新しい街並みの光が美しいエリア。" },
+			{ id: 12, lng: 139.6200, lat: 35.2850, name: "横須賀・馬堀海岸", text: "【ロングドライブ】湾岸線を南下した終点。直線の海岸道路（まぼちょく）は開放的な走りが楽しめる。" }
 		];
 
-		// ピンを設置
+		const popups = {};
+		const btnContainer = document.getElementById('btn-container');
+
+		// 12箇所のマーカー＆ボタン展開
 		locations.forEach(loc => {
 			const el = document.createElement('div');
-			el.className = 'radar-dot';
+			el.className = 'custom-dot';
+
+			const popup = new maplibregl.Popup({ offset: 12, closeButton: false })
+				.setHTML(`<h2>${loc.name}</h2><p>${loc.text}</p>`);
+			
+			popups[loc.id] = popup;
 
 			new maplibregl.Marker(el)
 				.setLngLat([loc.lng, loc.lat])
-				.setPopup(
-					new maplibregl.Popup({ offset: 12, closeButton: false })
-					.setHTML(`<h2>${loc.name}</h2><p>${loc.text}</p>`)
-				)
+				.setPopup(popup)
 				.addTo(map);
+
+			const btn = document.createElement('button');
+			btn.className = 'spot-btn';
+			btn.innerText = `[${String(loc.id).padStart(2, '0')}] ${loc.name}`;
+			btn.onclick = () => focusSpot(loc.lng, loc.lat, loc.id);
+			btnContainer.appendChild(btn);
 		});
+
+		// スポットへカメラをズームイン
+		function focusSpot(lng, lat, id) {
+			if (isAutoPilot) toggleAutoPilot();
+
+			map.flyTo({
+				center: [lng, lat],
+				zoom: 13.0,
+				pitch: 62,
+				speed: 0.9,
+				curve: 1.2,
+				essential: true
+			});
+
+			map.once('moveend', () => {
+				locations.forEach(loc => popups[loc.id].remove());
+				popups[id].addTo(map);
+			});
+		}
 
 		map.on('load', () => {
-			// 8個のピンを綺麗に一本に繋ぐドライブコース
-			map.addSource('cyber-route', {
-				type: 'geojson',
-				data: {
-					type: 'Feature',
-					geometry: {
-						type: 'LineString',
-						coordinates: [
-							[139.7671, 35.6812], // 東京駅
-							[139.8395, 35.7101], // スカイツリー
-							[139.7633, 35.6366], // レインボーブリッジ
-							[139.7820, 35.5480], // 羽田
-							[139.7400, 35.5200], // 川崎工場
-							[139.7606, 35.6264], // 大黒PA
-							[139.8747, 35.4632], // 海ほたる
-							[140.1233, 35.6074], // 千葉フォルニア
-							[139.7671, 35.6812]  // 東京駅に戻る
-						]
-					}
-				}
-			});
+			// 今回は特定のコースに縛らないため、線（ルート）は引かずに独立したスポット群として見せています
 
-			// 光るネオンライン
-			map.addLayer({
-				id: 'laser-line',
-				type: 'line',
-				source: 'cyber-route',
-				paint: {
-					'line-color': '#00ffcc',
-					'line-width': 3,
-					'line-opacity': 0.8
-				}
+			// 左下のテレメトリーパネルを更新
+			map.on('move', () => {
+				const center = map.getCenter();
+				const bearing = map.getBearing();
+				document.getElementById('tele-lat').innerText = center.lat.toFixed(3);
+				document.getElementById('tele-lng').innerText = center.lng.toFixed(3);
+				document.getElementById('tele-brg').innerText = `${bearing.toFixed(1)}°`;
 			});
 		});
 
-		// オートパイロット（自動旋回）
+		// 時計演出
+		setInterval(() => {
+			const now = new Date();
+			document.getElementById('live-time').innerText = now.toTimeString().split(' ')[0];
+		}, 1000);
+
+		// スキャンモード（自動旋回）
 		let isAutoPilot = false;
 		let animationFrameId = null;
 
 		function toggleAutoPilot() {
-			const btn = document.querySelector('.nav-btn');
+			const btn = document.querySelector('.auto-btn');
 
 			if (!isAutoPilot) {
 				isAutoPilot = true;
-				btn.innerText = "DISENGAGE";
+				btn.innerText = "HALT SCAN (スキャン停止)";
 				btn.style.background = "#ff0055";
 				btn.style.color = "#fff";
-
+				btn.style.boxShadow = "0 0 15px #ff0055";
+				
 				map.flyTo({
-					center: [139.82, 35.58], // 全体が見渡せる中心
-					zoom: 10.5,
-					pitch: 55,
-					bearing: 0,
-					speed: 0.5,
-					essential: true
+					center: [139.84, 35.53],
+					zoom: 9.8,
+					pitch: 52,
+					speed: 0.6
 				});
 
 				map.once('moveend', startOrbitalRotation);
 			} else {
 				isAutoPilot = false;
-				btn.innerText = "ENGAGE AUTOPILOT";
+				btn.innerText = "GLOBAL SCAN (自動旋回)";
 				btn.style.background = "#00ffcc";
-				btn.style.color = "#05050a";
+				btn.style.color = "#020208";
+				btn.style.boxShadow = "none";
 
-				if (animationFrameId) {
-					cancelAnimationFrame(animationFrameId);
-				}
+				if (animationFrameId) cancelAnimationFrame(animationFrameId);
 			}
 		}
 
 		function startOrbitalRotation() {
 			if (!isAutoPilot) return;
-			map.setBearing(map.getBearing() + 0.05); // 軽快に回るよう少し速度調整
+			map.setBearing(map.getBearing() + 0.04);
 			animationFrameId = requestAnimationFrame(startOrbitalRotation);
 		}
 	</script>
