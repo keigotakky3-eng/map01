@@ -5,7 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-	<title>Satellite Night Cruise</title>
+	<title>Lightweight Satellite Cruise</title>
 
 	<link href="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.css" rel="stylesheet">
 
@@ -17,8 +17,8 @@
 		}
 
 		body{
-			font-family: 'Consolas', 'Courier New', monospace, sans-serif;
-			background: #020205;
+			font-family: monospace;
+			background: #05050a;
 			overflow: hidden;
 			color: #00ffcc;
 		}
@@ -28,153 +28,93 @@
 			height:100vh;
 		}
 
-		/* SFコックピット風 UIパネル */
+		/* 軽くてシンプルなSF風パネル */
 		.hud-panel {
 			position: absolute;
-			background: rgba(5, 10, 20, 0.85);
+			background: rgba(10, 10, 20, 0.85);
 			border: 1px solid #00ffcc;
-			padding: 15px 20px;
+			padding: 12px 18px;
 			border-radius: 4px;
-			backdrop-filter: blur(8px);
-			box-shadow: 0 0 20px rgba(0, 255, 204, 0.15);
 			z-index: 10;
 		}
 
 		.title-hud {
 			top: 20px;
 			left: 20px;
-			width: 320px;
 		}
 
 		.title-hud h1 {
-			font-size: 20px;
-			font-weight: bold;
-			letter-spacing: 2px;
+			font-size: 18px;
 			color: #ffffff;
-			border-bottom: 1px solid rgba(0, 255, 204, 0.4);
-			padding-bottom: 5px;
-			margin-bottom: 8px;
+			margin-bottom: 2px;
 		}
 
 		.title-hud p {
 			font-size: 11px;
 			color: #00ffcc;
-			opacity: 0.8;
 		}
 
-		/* 右側のステータスモニター */
-		.status-hud {
-			top: 20px;
-			right: 20px;
-			width: 240px;
-			font-size: 12px;
-			line-height: 1.6;
-		}
-
-		.status-item {
-			display: flex;
-			justify-content: space-between;
-			margin-bottom: 4px;
-		}
-
-		.status-label { color: #88aacc; }
-		.status-value { color: #ffffff; font-weight: bold; text-shadow: 0 0 5px #00ffcc;}
-
-		/* 衛星管制風のコントロールボタン */
+		/* オートパイロットボタン */
 		.nav-btn {
 			position: absolute;
-			bottom: 30px;
-			right: 30px;
+			bottom: 25px;
+			right: 25px;
 			z-index: 10;
 			background: #00ffcc;
-			color: #020205;
+			color: #05050a;
 			border: none;
-			padding: 12px 24px;
-			font-size: 13px;
+			padding: 10px 20px;
+			font-size: 12px;
 			font-weight: bold;
-			letter-spacing: 2px;
 			cursor: pointer;
 			border-radius: 4px;
-			box-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
-			transition: all 0.3s ease;
+			box-shadow: 0 0 10px rgba(0, 255, 204, 0.3);
+			transition: 0.2s;
 		}
 
 		.nav-btn:hover {
 			background: #ffffff;
-			box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
-			transform: scale(1.05);
+			transform: scale(1.03);
 		}
 
-		/* マップポップアップの近未来化 */
+		/* ポップアップ */
 		.maplibregl-popup-content {
-			background: rgba(2, 2, 5, 0.9) !important;
+			background: #0a0a10 !important;
 			border: 1px solid #00ffcc !important;
 			color: #ffffff !important;
 			border-radius: 4px !important;
-			padding: 12px !important;
-			font-family: monospace;
+			padding: 10px !important;
 		}
 
 		.maplibregl-popup-content h2 {
 			color: #00ffcc;
-			font-size: 15px;
-			letter-spacing: 1px;
-			margin-bottom: 6px;
-			border-bottom: 1px solid rgba(0,255,204,0.2);
+			font-size: 14px;
+			margin-bottom: 4px;
 		}
 
 		.maplibregl-popup-content p {
 			font-size: 11px;
-			color: #aabbcc;
+			color: #cccccc;
 		}
 
-		.maplibregl-popup-tip {
-			border-top-color: #00ffcc !important;
-		}
-
-		/* レーダーの点のようなマーカー */
+		/* 軽量なレーダーピン */
 		.radar-dot {
-			width: 14px;
-			height: 14px;
-			background: #ffffff;
-			border-radius: 50%;
-			position: relative;
-			cursor: pointer;
-		}
-
-		.radar-dot::after {
-			content: '';
-			position: absolute;
-			width: 100%;
-			height: 100%;
-			top: 0;
-			left: 0;
+			width: 12px;
+			height: 12px;
 			background: #00ffcc;
+			border: 2px solid #fff;
 			border-radius: 50%;
-			animation: pulse 2s infinite;
+			cursor: pointer;
+			box-shadow: 0 0 8px #00ffcc;
 		}
-
-		@keyframes pulse {
-			0% { transform: scale(1); opacity: 1; }
-			100% { transform: scale(3.5); opacity: 0; }
-		}
-
 	</style>
 </head>
 
 <body>
 
 	<div class="hud-panel title-hud">
-		<h1>SATELLITE CRUISE</h1>
-		<p>SYSTEM: ACTIVE // ORBITAL VIEW</p>
-		<p style="margin-top: 5px;">📍 TOKYO BAY AREA HIGHWAY LOOP</p>
-	</div>
-
-	<div class="hud-panel status-hud">
-		<div class="status-item"><span class="status-label">MODE:</span><span class="status-value" id="mode-text">STANDBY</span></div>
-		<div class="status-item"><span class="status-label">ALTITUDE:</span><span class="status-value" id="alt-text">4,200 km</span></div>
-		<div class="status-item"><span class="status-label">BEARING:</span><span class="status-value" id="bear-text">-20.0°</span></div>
-		<div class="status-item"><span class="status-label">AUDIO:</span><span class="status-value" style="color:#ff0055;">EUROBEAT.LOG</span></div>
+		<h1>SATELLITE CRUISE v2</h1>
+		<p>📍 TOKYO BAY FULL LOOP (8 NODES)</p>
 	</div>
 
 	<button class="nav-btn" onclick="toggleAutoPilot()">
@@ -186,29 +126,120 @@
 	<script src="https://unpkg.com/maplibre-gl@5.3.0/dist/maplibre-gl.js"></script>
 
 	<script>
-		// 暗色ハイブリッド衛星写真スタイル
+		// 画像を使わない、超軽量で動作が滑らかな「デモ用ダークスタイル」
 		const map = new maplibregl.Map({
 			container: 'map',
-			style: {
-				version: 8,
-				sources: {
-					'satellite': {
-						type: 'raster',
-						tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
-						tileSize: 256,
-						attribution: 'Google Imagery'
+			style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+			center: [139.85, 35.55],
+			zoom: 10,
+			pitch: 50,
+			bearing: -10,
+			attributionControl: false
+		});
+
+		// 充実の8箇所スポットデータ
+		const locations = [
+			{ lng: 139.7671, lat: 35.6812, name: "01: 東京駅", text: "ナイトドライブの始発点" },
+			{ lng: 139.8395, lat: 35.7101, name: "02: スカイツリー", text: "サイバーに輝く巨大タワー" },
+			{ lng: 139.7633, lat: 35.6366, name: "03: レインボーブリッジ", text: "駆け抜ける都市の夜景" },
+			{ lng: 139.7820, lat: 35.5480, name: "04: 羽田空港周辺", text: "滑走路のライトが幻想的" },
+			{ lng: 139.7400, lat: 35.5200, name: "05: 川崎工場地帯", text: "近未来SF感満載の工場夜景" },
+			{ lng: 139.7606, lat: 35.6264, name: "06: 大黒PA", text: "車好きが集まる聖地ジャンクション" },
+			{ lng: 139.8747, lat: 35.4632, name: "07: 海ほたるPA", text: "東京湾の真ん中に浮かぶ要塞" },
+			{ lng: 140.1233, lat: 35.6074, name: "08: 千葉フォルニア", text: "対岸のビル群を望む海岸通" }
+		];
+
+		// ピンを設置
+		locations.forEach(loc => {
+			const el = document.createElement('div');
+			el.className = 'radar-dot';
+
+			new maplibregl.Marker(el)
+				.setLngLat([loc.lng, loc.lat])
+				.setPopup(
+					new maplibregl.Popup({ offset: 12, closeButton: false })
+					.setHTML(`<h2>${loc.name}</h2><p>${loc.text}</p>`)
+				)
+				.addTo(map);
+		});
+
+		map.on('load', () => {
+			// 8個のピンを綺麗に一本に繋ぐドライブコース
+			map.addSource('cyber-route', {
+				type: 'geojson',
+				data: {
+					type: 'Feature',
+					geometry: {
+						type: 'LineString',
+						coordinates: [
+							[139.7671, 35.6812], // 東京駅
+							[139.8395, 35.7101], // スカイツリー
+							[139.7633, 35.6366], // レインボーブリッジ
+							[139.7820, 35.5480], // 羽田
+							[139.7400, 35.5200], // 川崎工場
+							[139.7606, 35.6264], // 大黒PA
+							[139.8747, 35.4632], // 海ほたる
+							[140.1233, 35.6074], // 千葉フォルニア
+							[139.7671, 35.6812]  // 東京駅に戻る
+						]
 					}
-				},
-				layers: [
-					{ id: 'satellite-layer', type: 'raster', source: 'satellite' },
-					{
-						id: 'darken-layer',
-						type: 'background',
-						paint: { 'background-color': '#020205', 'background-opacity': 0.25 }
-					}
-				]
-			},
-			center: [139.9, 35.65],
-			zoom: 9.5,
-			pitch: 45,
-			bearing: -20		
+				}
+			});
+
+			// 光るネオンライン
+			map.addLayer({
+				id: 'laser-line',
+				type: 'line',
+				source: 'cyber-route',
+				paint: {
+					'line-color': '#00ffcc',
+					'line-width': 3,
+					'line-opacity': 0.8
+				}
+			});
+		});
+
+		// オートパイロット（自動旋回）
+		let isAutoPilot = false;
+		let animationFrameId = null;
+
+		function toggleAutoPilot() {
+			const btn = document.querySelector('.nav-btn');
+
+			if (!isAutoPilot) {
+				isAutoPilot = true;
+				btn.innerText = "DISENGAGE";
+				btn.style.background = "#ff0055";
+				btn.style.color = "#fff";
+
+				map.flyTo({
+					center: [139.82, 35.58], // 全体が見渡せる中心
+					zoom: 10.5,
+					pitch: 55,
+					bearing: 0,
+					speed: 0.5,
+					essential: true
+				});
+
+				map.once('moveend', startOrbitalRotation);
+			} else {
+				isAutoPilot = false;
+				btn.innerText = "ENGAGE AUTOPILOT";
+				btn.style.background = "#00ffcc";
+				btn.style.color = "#05050a";
+
+				if (animationFrameId) {
+					cancelAnimationFrame(animationFrameId);
+				}
+			}
+		}
+
+		function startOrbitalRotation() {
+			if (!isAutoPilot) return;
+			map.setBearing(map.getBearing() + 0.05); // 軽快に回るよう少し速度調整
+			animationFrameId = requestAnimationFrame(startOrbitalRotation);
+		}
+	</script>
+
+</body>
+</html>
